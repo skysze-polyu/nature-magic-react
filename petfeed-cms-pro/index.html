@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NATURE MAGIC CMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        /* Nature Magic Liquid Glass System */
+        --liquid-tint: rgba(255, 255, 255, 0.65); 
+        --liquid-border: rgba(255, 255, 255, 0.8);
+        --liquid-blur: 20px;
+        --color-bg: #F2F0E9; /* Slightly warmer, organic beige */
+        --color-text: #1A1A18; /* Softer black */
+        --color-accent: #3A4D39; /* Nature Green derived from logo */
+      }
+      
+      body { 
+        font-family: 'Tenor Sans', sans-serif; 
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        /* Organic ambient background */
+        background-image: 
+            radial-gradient(at 10% 10%, rgba(200, 215, 180, 0.4) 0px, transparent 60%),
+            radial-gradient(at 90% 90%, rgba(230, 220, 200, 0.5) 0px, transparent 60%),
+            radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.6) 0px, transparent 50%);
+        background-attachment: fixed;
+        background-size: cover;
+      }
+
+      /* Liquid Glass Class */
+      .liquid-glass {
+        background: var(--liquid-tint);
+        backdrop-filter: blur(var(--liquid-blur));
+        -webkit-backdrop-filter: blur(var(--liquid-blur));
+        border: 1px solid var(--liquid-border);
+        box-shadow: 
+          0 8px 32px -4px rgba(0, 0, 0, 0.05),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .liquid-glass:hover {
+         background: rgba(255, 255, 255, 0.75);
+         box-shadow: 
+          0 12px 40px -8px rgba(58, 77, 57, 0.1),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+         transform: translateY(-2px);
+      }
+      
+      /* Sidebar Glass */
+      .liquid-sidebar {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(24px);
+        border-right: 1px solid rgba(255, 255, 255, 0.6);
+      }
+
+      /* Form Elements */
+      input, select, textarea {
+        background-color: rgba(255, 255, 255, 0.4) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+        font-family: 'Tenor Sans', sans-serif !important;
+      }
+      
+      input:focus, select:focus, textarea:focus {
+        background-color: #FFFFFF !important;
+        border-color: var(--color-accent) !important;
+        outline: none;
+        box-shadow: 0 4px 20px rgba(58, 77, 57, 0.1) !important;
+        transform: scale(1.01);
+      }
+
+      /* Animations */
+      @keyframes fade-in-up {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      
+      .animate-fade-in {
+        animation: fade-in-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(58, 77, 57, 0.2); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(58, 77, 57, 0.5); }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
