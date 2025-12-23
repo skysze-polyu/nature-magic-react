@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 數據整理系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-7xl mx-auto p-8">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">🤖 AI 數據整理系統</h1>
+      <p class="text-gray-600">使用本地 LM Studio 模型自動整理雜亂資料</p>
+      <div class="mt-4">
+        <button onclick="testConnection()" class="text-sm bg-blue-100 text-blue-800 px-4 py-2 rounded">
+          測試 LM Studio 連接
+        </button>
+        <span id="connectionStatus" class="ml-3 text-sm"></span>
+      </div>
+    </header>
+
+    <!-- 步驟 1: 輸入資料 -->
+    <section class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-4">📝 步驟 1: 輸入雜亂資料</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">整理方式：</label>
+        <select id="organizationType" class="border rounded px-3 py-2 w-64">
+          <option value="邏輯類別">按邏輯類別</option>
+          <option value="功能模塊">按功能模塊</option>
+          <option value="優先級">按優先級</option>
+          <option value="時間順序">按時間順序</option>
+          <option value="主題">按主題</option>
+        </select>
+      </div>
+
+      <textarea 
+        id="rawDataInput" 
+        class="w-full h-64 border rounded p-4 font-mono text-sm"
+        placeholder="在此粘貼或輸入雜亂的資料...
+
+例如：
+- 產品描述文本
+- 代碼片段
+- 功能需求列表
+- 混雜的筆記
+- 任何需要整理的文本數據
+
+AI 會自動分析並分類整理。"></textarea>
+
+      <div class="mt-4 flex gap-3">
+        <button 
+          onclick="organizeData()" 
+          class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700">
+          🚀 開始 AI 整理
+        </button>
+        <button 
+          onclick="loadExample()" 
+          class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300">
+          加載示例數據
+        </button>
+      </div>
+
+      <div id="processingStatus" class="mt-4 hidden">
+        <div class="bg-yellow-50 border border-yellow-200 rounded p-4">
+          <p class="text-yellow-800">⏳ AI 正在分析和整理資料，請稍候...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 2: 查看整理結果 -->
+    <section id="resultsSection" class="bg-white rounded-lg shadow p-6 mb-6 hidden">
+      <h2 class="text-2xl font-bold mb-4">✅ 步驟 2: 查看整理結果</h2>
+      
+      <div id="resultsSummary" class="bg-green-50 border border-green-200 rounded p-4 mb-6"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 分類列表 -->
+        <div class="lg:col-span-1">
+          <h3 class="font-bold mb-3">📂 分類</h3>
+          <div id="categoriesList" class="space-y-2"></div>
+        </div>
+
+        <!-- 數據項目 -->
+        <div class="lg:col-span-2">
+          <h3 class="font-bold mb-3">📄 整理後的數據</h3>
+          <div id="itemsList" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 3: 導出代碼 -->
+    <section id="exportSection" class="bg-white rounded-lg shadow p-6 hidden">
+      <h2 class="text-2xl font-bold mb-4">📦 步驟 3: 導出整齊代碼</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">導出格式：</label>
+        <div class="flex gap-3">
+          <button onclick="exportData('typescript')" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+            TypeScript (.ts)
+          </button>
+          <button onclick="exportData('constants')" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Constants (.ts)
+          </button>
+          <button onclick="exportData('json')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            JSON (.json)
+          </button>
+        </div>
+      </div>
+
+      <div id="exportPreview" class="mt-4 hidden">
+        <h3 class="font-medium mb-2">預覽：</h3>
+        <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto text-sm"><code id="exportCode"></code></pre>
+        <button onclick="copyToClipboard()" class="mt-3 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+          📋 複製到剪貼板
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3001/api';
+    let currentData = null;
+
+    async function testConnection() {
+      const status = document.getElementById('connectionStatus');
+      status.textContent = '測試中...';
+      status.className = 'ml-3 text-sm text-yellow-600';
+
+      try {
+        const res = await fetch(`${API_BASE}/test-lm-studio`);
+        const data = await res.json();
+        
+        if (data.success) {
+          status.textContent = '✅ LM Studio 連接正常';
+          status.className = 'ml-3 text-sm text-green-600';
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (error) {
+        status.textContent = '❌ 無法連接 LM Studio';
+        status.className = 'ml-3 text-sm text-red-600';
+        alert('請確保 LM Studio 已啟動並運行在 localhost:1234');
+      }
+    }
+
+    async function organizeData() {
+      const rawData = document.getElementById('rawDataInput').value.trim();
+      const organizationType = document.getElementById('organizationType').value;
+
+      if (!rawData) {
+        alert('請輸入需要整理的資料');
+        return;
+      }
+
+      document.getElementById('processingStatus').classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/organize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rawData, organizationType })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          currentData = result.data;
+          displayResults(result.data, result.message);
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        alert('整理失敗: ' + error.message);
+      } finally {
+        document.getElementById('processingStatus').classList.add('hidden');
+      }
+    }
+
+    function displayResults(data, message) {
+      // 顯示結果區域
+      document.getElementById('resultsSection').classList.remove('hidden');
+      document.getElementById('exportSection').classList.remove('hidden');
+
+      // 摘要
+      document.getElementById('resultsSummary').innerHTML = `
+        <p class="text-green-800 font-medium">${message}</p>
+        <p class="text-sm text-gray-600 mt-2">最後更新: ${new Date(data.lastUpdated).toLocaleString('zh-TW')}</p>
+      `;
+
+      // 分類列表
+      const categoriesList = document.getElementById('categoriesList');
+      categoriesList.innerHTML = data.categories.map(cat => `
+        <div class="border rounded p-3 bg-blue-50">
+          <div class="font-medium text-blue-900">${cat.name}</div>
+          <div class="text-xs text-gray-600 mt-1">${cat.description || ''}</div>
+          <div class="text-xs text-gray-500 mt-1">
+            ${data.items.filter(item => item.categoryId === cat.id).length} 項
+          </div>
+        </div>
+      `).join('');
+
+      // 數據項目
+      const itemsList = document.getElementById('itemsList');
+      itemsList.innerHTML = data.items.map(item => {
+        const category = data.categories.find(c => c.id === item.categoryId);
+        return `
+          <div class="border rounded p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <span class="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 mb-2">
+                  ${category?.name || '未分類'}
+                </span>
+                <p class="text-gray-900">${item.content}</p>
+                ${item.originalText && item.originalText !== item.content ? `
+                  <details class="mt-2">
+                    <summary class="text-xs text-gray-500 cursor-pointer">原始文本</summary>
+                    <p class="text-xs text-gray-600 mt-1 pl-4 border-l-2">${item.originalText}</p>
+                  </details>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function exportData(format) {
+      if (!currentData) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/export`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ format })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          document.getElementById('exportPreview').classList.remove('hidden');
+          document.getElementById('exportCode').textContent = result.content;
+          alert(`✅ 已導出為 ${result.filename}`);
+        }
+      } catch (error) {
+        alert('導出失敗: ' + error.message);
+      }
+    }
+
+    function copyToClipboard() {
+      const code = document.getElementById('exportCode').textContent;
+      navigator.clipboard.writeText(code);
+      alert('✅ 已複製到剪貼板');
+    }
+
+    function loadExample() {
+      document.getElementById('rawDataInput').value = `
+產品功能列表 (未整理):
+- 用戶可以通過電子郵件註冊
+- 支持深色模式切換
+- 產品圖片需要支持縮放功能
+- 購物車要能保存 7 天
+- Bug: 在 Safari 上付款按鈕位置偏移
+- 需要添加多語言支持 (中文、英文、日文)
+- 管理員需要查看銷售統計
+- 產品詳情頁加載太慢，需要優化
+- 移動端的導航菜單需要重新設計
+- 用戶反饋: 結賬流程太複雜
+- 要實現實時庫存更新
+- SEO: 產品頁面需要更好的 meta 描述
+- 安全性: 需要添加 CSRF 保護
+- 客服聊天功能 (優先級: 高)
+- 電子郵件通知系統還沒做
+      `.trim();
+    }
+
+    // 頁面加載時測試連接
+    window.addEventListener('load', testConnection);
+  </script>
+</body>
+</html>

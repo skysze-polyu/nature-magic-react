@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "title": "GPT-4o",
+      "provider": "github",
+      "model": "gpt-4o",
+      "apiKey": "${GITHUB_TOKEN}"
+    },
+    {
+      "title": "GPT-4o Mini",
+      "provider": "github",
+      "model": "gpt-4o-mini",
+      "apiKey": "${GITHUB_TOKEN}"
+    },
+    {
+      "title": "Llama 3.1",
+      "provider": "github",
+      "model": "meta-llama-3.1-405b-instruct",
+      "apiKey": "${GITHUB_TOKEN}"
+    },
+    {
+      "title": "LM Studio",
+      "provider": "lmstudio",
+      "model": "local-model",
+      "apiBase": "http://localhost:1234/v1"
+    }
+  ]
+}
